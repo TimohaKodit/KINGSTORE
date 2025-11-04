@@ -55,9 +55,9 @@ from app.api.v1.endpoints import items
 from app.api.v1.endpoints import categories 
 from app.api.v1.endpoints import orders
 # 💡 НОВЫЙ ИМПОРТ ДЛЯ ЗАГРУЗКИ ФАЙЛОВ
-from app.api.v1.endpoints import uploads
-# 💡 НОВЫЙ ИМПОРТ ДЛЯ РАЗДАЧИ СТАТИЧЕСКИХ ФАЙЛОВ
-from fastapi.staticfiles import StaticFiles 
+# from app.api.v1.endpoints import uploads
+# # 💡 НОВЫЙ ИМПОРТ ДЛЯ РАЗДАЧИ СТАТИЧЕСКИХ ФАЙЛОВ
+# from fastapi.staticfiles import StaticFiles 
 # -------------------------
 
 # Импортируем только те модели SQLAlchemy, которые мы используем
@@ -94,7 +94,7 @@ app.add_middleware(
 
 # 💡 РЕГИСТРАЦИЯ СТАТИЧЕСКОЙ ПАПКИ 
 # Путь /static/images/ будет обслуживать содержимое папки 'uploaded_images'
-app.mount("/static/images", StaticFiles(directory="uploaded_images"), name="static_images")
+# app.mount("/static/images", StaticFiles(directory="uploaded_images"), name="static_images")
 
 
 # Подключаем роуты для товаров
@@ -105,11 +105,11 @@ app.include_router(
 )
 
 # 💡 ПОДКЛЮЧАЕМ РОУТЫ ДЛЯ ЗАГРУЗКИ ФАЙЛОВ
-app.include_router(
-    uploads.router, 
-    prefix="/api/v1", 
-    tags=["File Uploads"]
-)
+# app.include_router(
+#     uploads.router, 
+#     prefix="/api/v1", 
+#     tags=["File Uploads"]
+# )
 
 # Подключаем роуты для категорий (используют фиксированный список)
 app.include_router(
@@ -123,4 +123,5 @@ app.include_router(
     orders.router, 
     prefix="/api/v1", 
     tags=["orders"]
+
 )
