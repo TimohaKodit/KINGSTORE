@@ -9,10 +9,14 @@ class Settings(BaseSettings):
     BOT_TOKEN: str
     API_URL: str 
     ADMIN_ID: int 
+    CLOUDINARY_CLOUD_NAME: str
+    CLOUDINARY_API_KEY: str
+    CLOUDINARY_API_SECRET: str
 
     class Config:
         env_file = ".env"
         env_file_encoding = 'utf-8'
         case_sensitive = True
+
 
 settings = Settings()
