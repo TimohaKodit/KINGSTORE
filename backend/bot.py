@@ -12,13 +12,20 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiogram.client.default import DefaultBotProperties
 from dotenv import load_dotenv
+import cloudinary
+import cloudinary.uploader
 
 # --- Настройка Логирования ---
 logging.basicConfig(level=logging.INFO)
 
 # --- Настройка Констант из .env ---
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
-
+cloudinary.config( 
+    cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME"), 
+    api_key = os.getenv("CLOUDINARY_API_KEY"), 
+    api_secret = os.getenv("CLOUDINARY_API_SECRET"),
+    secure = True
+)
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # Читаем ADMIN_ID. Используем 0 как безопасное, гарантированно невалидное ID по умолчанию, 
@@ -405,13 +412,30 @@ async def process_accessory_photo(message: types.Message, state: FSMContext, bot
             # Имя файла для аксессуара
             filename = f"Accessory_{item_name.replace(' ', '_')}.jpg" 
             
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    f"{API_URL}/upload/images/",
-                    files={"files": (filename, file_buffer, 'image/jpeg')} 
-                )
-                response.raise_for_status()
-                uploaded_urls = response.json() 
+            # async with httpx.AsyncClient(timeout=30.0) as client:
+            #     response = await client.post(
+            #         f"{API_URL}/upload/images/",
+            #         files={"files": (filename, file_buffer, 'image/jpeg')} 
+            #     )
+            #     response.raise_for_status()
+            #     uploaded_urls = response.json()
+        try:
+    # Загружаем файл в Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                file_buffer,
+                folder="my_shop_uploads" # (Опционально) папка на Cloudinary
+            )
+    # ❗ Получаем безопасный URL
+            uploaded_urls = [upload_result['secure_url']] 
+
+        except Exception as e:
+            logging.error(f"Ошибка загрузки в Cloudinary: {e}")
+            await message.answer("❌ Ошибка загрузки фото в облако. Повторите фото.")
+    # ... (твой код возврата в состояние ожидания фото)
+            return
+        finally:
+            if file_buffer:
+                file_buffer.close()
                 
             await message.answer(f"✅ Фото для '{item_name}' успешно загружено!")
             
@@ -773,17 +797,34 @@ async def  process_variant_photo(message: types.Message, state: FSMContext, bot:
             # Внимание: имя файла может быть любым, но важно, чтобы оно соответствовало формату FastAPI
             filename = f"{current_variant.get('memory', 'NoMem')}_{current_color.replace(' ', '_')}.jpg" 
             
-            async with httpx.AsyncClient(timeout=30.0) as client: # Увеличим таймаут для загрузки
-                response = await client.post(
-                    f"{API_URL}/upload/images/",
-                    # 'files' принимает кортеж: (filename, file_object, mime_type)
-                    files={"files": (filename, file_buffer, 'image/jpeg')} 
-                )
-                response.raise_for_status()
-                # Предполагаем, что бэкенд возвращает список URL-ов
-                uploaded_urls = response.json() 
+            # async with httpx.AsyncClient(timeout=30.0) as client: # Увеличим таймаут для загрузки
+            #     response = await client.post(
+            #         f"{API_URL}/upload/images/",
+            #         # 'files' принимает кортеж: (filename, file_object, mime_type)
+            #         files={"files": (filename, file_buffer, 'image/jpeg')} 
+            #     )
+            #     response.raise_for_status()
+            #     # Предполагаем, что бэкенд возвращает список URL-ов
+            #     uploaded_urls = response.json() 
+        try:
+    # Загружаем файл в Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                file_buffer,
+                folder="my_shop_uploads" # (Опционально) папка на Cloudinary
+            )
+    # ❗ Получаем безопасный URL
+            uploaded_urls = [upload_result['secure_url']] 
+
+        except Exception as e:
+            logging.error(f"Ошибка загрузки в Cloudinary: {e}")
+            await message.answer("❌ Ошибка загрузки фото в облако. Повторите фото.")
+    # ... (твой код возврата в состояние ожидания фото)
+            return
+        finally:
+            if file_buffer:
+                file_buffer.close()
                 
-            await message.answer(f"✅ Фото для {current_color} успешно загружено!")
+        await message.answer(f"✅ Фото для {current_color} успешно загружено!")
             
         except httpx.HTTPStatusError as e:
             logging.error(f"Upload failed: {e.response.text}")
@@ -1196,4 +1237,5 @@ if __name__ == '__main__':
 # if __name__ == '__main__':
 #     import asyncio
 #     # Запуск асинхронной функции main
+
 #     asyncio.run(main())
