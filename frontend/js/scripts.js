@@ -4,7 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // ВАЖНО: Укажите правильный URL вашего FastAPI бэкенда
-    const API_BASE_URL = 'http://127.0.0.1:8888/api/v1'; // ❗ Проверьте порт!
+    const API_BASE_URL = 'https://kingstore-0tdg.onrender.com/api/v1'; // ❗ Проверьте порт!
     // НОВЫЙ ЭНДПОИНТ: Эндпоинт, который обрабатывает заказ и отправляет уведомление в Telegram
     const ORDER_SUBMIT_ENDPOINT = `${API_BASE_URL}/orders/submit`; 
 
@@ -2296,4 +2296,5 @@ document.addEventListener('DOMContentLoaded', () => {
 //     // Инициализация
 //     loadAndRenderProducts();
 //     updateCartCounter(); 
+
 // });
